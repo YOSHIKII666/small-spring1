@@ -21,13 +21,16 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
         // 2. 获取 BeanFactory
         ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 
-        // 3. 在 Bean 实例化之前，执行 BeanFactoryPostProcessor (Invoke factory processors registered as beans in the context.)
+        // 3. 添加 ApplicationContextAwareProcessor，让继承自 ApplicationContextAware 的 Bean 对象都能感知所属的 ApplicationContext
+        beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+
+        // 4. 在 Bean 实例化之前，执行 BeanFactoryPostProcessor (Invoke factory processors registered as beans in the context.)
         invokeBeanFactoryPostProcessors(beanFactory);
 
-        // 4. BeanPostProcessor 需要提前于其他 Bean 对象实例化之前执行注册操作
+        // 5. BeanPostProcessor 需要提前于其他 Bean 对象实例化之前执行注册操作
         registerBeanPostProcessors(beanFactory);
 
-        // 5. 提前实例化单例Bean对象
+        // 6. 提前实例化单例Bean对象
         beanFactory.preInstantiateSingletons();
     }
 
@@ -76,13 +79,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 
     @Override
     public void registerShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(this::close));//在java程序中注册一个关闭钩子，当jvm准备关闭时，这个钩子会被调用。
-        //这段代码表示，当JVM准备关闭时，会启动一个新的线程调用当前的close方法。
+        Runtime.getRuntime().addShutdownHook(new Thread(this::close));
     }
 
     @Override
     public void close() {
         getBeanFactory().destroySingletons();
     }
+
 
 }
