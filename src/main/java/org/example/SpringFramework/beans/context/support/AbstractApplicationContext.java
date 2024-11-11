@@ -11,11 +11,9 @@ import org.example.SpringFramework.beans.context.event.SimpleApplicationEventMul
 import org.example.SpringFramework.beans.factory.ConfigurableListableBeanFactory;
 import org.example.SpringFramework.beans.factory.config.BeanFactoryPostProcessor;
 import org.example.SpringFramework.beans.factory.config.BeanPostProcessor;
-import org.example.SpringFramework.beans.factory.config.ConfigurableBeanFactory;
 import org.example.SpringFramework.beans.io.DefaultResourceLoader;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 
 public abstract class AbstractApplicationContext extends DefaultResourceLoader implements ConfigurableApplicationContext {
@@ -47,10 +45,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
         // 7. 注册事件监听器
         registerListeners();
 
-        // 8. 提前实例化单例Bean对象
+        // 8. 提前实例化单例Bean对象。单例是默认的Bean作用域，意味着在整个Spring上下文中，对于Bean定义只会创建一个实例，任何组件请求该bean时总是返回相同的实例
         beanFactory.preInstantiateSingletons();
 
-        // 9. 发布容器刷新完成事件
+        // 9. 发布容器刷新完成事件，发布事件，同时判断监听器是否对事件有兴趣
         finishRefresh();
     }
 
@@ -78,9 +76,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
         beanFactory.registerSingleton(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, applicationEventMulticaster);
     }
 
+    //注册监听器，监听器一般是定义在bean中的
     private void registerListeners() {
+        //识别出所有监听器类
         Collection<ApplicationListener> applicationListeners = getBeansOfType(ApplicationListener.class).values();
         for (ApplicationListener listener : applicationListeners) {
+            //加进这个hashset中，这个hashset保存监听器，监听器是一个范形接口，Set<Listener<Event>>
             applicationEventMulticaster.addApplicationListener(listener);
         }
     }
@@ -91,6 +92,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 
     @Override
     public void publishEvent(ApplicationEvent event) {
+        //只管发布事件，事件发布后由监听者判断发布的事件自己是否感兴趣，然后再进行处理。
         applicationEventMulticaster.multicastEvent(event);
     }
 
@@ -117,6 +119,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
     @Override
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
         return getBeanFactory().getBean(name, requiredType);
+    }
+
+    @Override
+    public <T> T getBean(Class<T> requiredType) throws BeansException {
+        return getBeanFactory().getBean(requiredType);
     }
 
     @Override

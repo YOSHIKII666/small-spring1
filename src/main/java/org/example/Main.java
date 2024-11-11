@@ -9,3 +9,4 @@ public class Main {
         Map<Object,Object> map=new HashMap<>();
     }
 }
+

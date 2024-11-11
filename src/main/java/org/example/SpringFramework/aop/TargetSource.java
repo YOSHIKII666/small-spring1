@@ -1,6 +1,9 @@
 package org.example.SpringFramework.aop;
 
+import org.example.SpringFramework.beans.util.ClassUtils;
+
 public class TargetSource {
+
     private final Object target;
 
     public TargetSource(Object target) {
@@ -12,19 +15,23 @@ public class TargetSource {
      * <p>Can return <code>null</code>, although certain usages of a
      * <code>TargetSource</code> might just work with a predetermined
      * target class.
+     *
      * @return the type of targets returned by this {@link TargetSource}
      */
-    public Class<?>[] getTargetClass(){
-        return this.target.getClass().getInterfaces();
+    public Class<?>[] getTargetClass() {
+        Class<?> clazz = this.target.getClass();
+        clazz = ClassUtils.isCglibProxyClass(clazz) ? clazz.getSuperclass() : clazz;
+        return clazz.getInterfaces();
     }
 
     /**
      * Return a target instance. Invoked immediately before the
      * AOP framework calls the "target" of an AOP method invocation.
+     *
      * @return the target object, which contains the joinpoint
      * @throws Exception if the target object can't be resolved
      */
-    public Object getTarget(){
+    public Object getTarget() {
         return this.target;
     }
 

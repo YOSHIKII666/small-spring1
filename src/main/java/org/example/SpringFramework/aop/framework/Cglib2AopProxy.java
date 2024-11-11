@@ -4,6 +4,7 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import org.example.SpringFramework.aop.AdvisedSupport;
+import org.example.SpringFramework.beans.util.ClassUtils;
 
 import java.lang.reflect.Method;
 
@@ -18,12 +19,15 @@ public class Cglib2AopProxy implements AopProxy {
     @Override
     public Object getProxy() {
         Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(advised.getTargetSource().getTarget().getClass());
+        Class<?> aClass = advised.getTargetSource().getTarget().getClass();
+        aClass = ClassUtils.isCglibProxyClass(aClass)? aClass.getSuperclass():aClass;
+        enhancer.setSuperclass(aClass);
         enhancer.setInterfaces(advised.getTargetSource().getTargetClass());
-        enhancer.setCallback(new DynamicAdvisedInterceptor(advised));
+        enhancer.setCallback(new DynamicAdvisedInterceptor(advised));//aop
         return enhancer.create();
     }
 
+    //代理模式，通过这样的方式把befor拦截加到bean上
     private static class DynamicAdvisedInterceptor implements MethodInterceptor {
 
         private final AdvisedSupport advised;

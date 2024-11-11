@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface ListableBeanFactory extends BeanFactory {
     /**
-     * 按照类型返回 Bean 实例
+     * 按照类型返回 Bean 实例,比如在AbstractApplicationContext中根据BeanFactoryPostProcessor,BeanPostProcessor接口返回对应的后处理器
      * @param type
      * @param <T>
      * @return
